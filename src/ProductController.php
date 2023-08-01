@@ -5,6 +5,12 @@ class ProductController
 
     public function processRequest(string $method, ?string $id): void
     {
-        var_dump($method, $id);
+        if ($id) {
+
+        } else {
+        }
+
     }
+    private function processResourceRequest(string $method, string $id)
+    {}
 }

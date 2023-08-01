@@ -13,6 +13,8 @@ if ($parts[2] != "products") {
     exit;
 }
 
-$id = $parts[2] ?? null;
-print_r($parts);
-var_dump($id);
+$id = $parts[3] ?? null;
+
+$controller = new ProductController();
+
+$controller->processRequest($_SERVER["REQUEST_METHOD"], $id);
