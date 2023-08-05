@@ -21,6 +21,32 @@ class ProductController
 
     private function processResourceRequest(string $method, string $id): void
     {
+        $product = $this->gateway->get($id);
+        if (!$product) {
+            http_response_code(404);
+            echo json_encode(["message" => "Product not found!"]);
+            return;
+        }
+        switch ($method) {
+            case "GET":
+                echo json_encode($product);
+                break;
+            case "PATCH":
+                $data = (array) json_decode(file_get_contents('php://input'), true);
+                $errors = $this->getValidationErrors($data);
+                if (!empty($errors)) {
+                    http_response_code(422);
+                    echo json_encode(["errors" => $errors]);
+                    break;
+                }
+                $rows = $this->gateway->update($product, $data);
+                echo json_encode([
+                    "message" => "Product $id Update edildi.",
+                    "rows" => $rows,
+                ]);
+                break;
+
+        }
 
     }
 
@@ -33,7 +59,12 @@ class ProductController
 
             case "POST":
                 $data = (array) json_decode(file_get_contents('php://input'), true);
-
+                $errors = $this->getValidationErrors($data);
+                if (!empty($errors)) {
+                    http_response_code(422);
+                    echo json_encode(["errors" => $errors]);
+                    break;
+                }
                 $id = $this->gateway->create($data);
                 http_response_code(201);
                 echo json_encode([
@@ -41,6 +72,23 @@ class ProductController
                     "id" => $id,
                 ]);
                 break;
+            default:
+                http_response_code(405);
+                header("Allow: GET, POST");
         }
+    }
+    private function getValidationErrors(array $data): array
+    {
+        $errors = [];
+        if (empty($data['name'])) {
+            $errors[] = 'name is required';
+        }
+        if (array_key_exists("size", $data)) {
+            if (filter_var($data["size"], FILTER_VALIDATE_INT) === false) {
+                $errors[] = 'size must be a integer';
+            }
+
+        }
+        return $errors;
     }
 }
