@@ -7,6 +7,7 @@ spl_autoload_register(function ($class) {
 });
 
 header("Content-type: application/json; charset=UTF-8");
+set_error_handler("ErrorHandler::handleError");
 set_exception_handler("ErrorHandler::handleException");
 
 $parts = explode("/", $_SERVER["REQUEST_URI"]);
