@@ -76,7 +76,7 @@ class ProductGateway
     {
         $uploadDir = 'uploads/';
 
-        $fileName = uniqid() . '_' . basename($file['name']);
+        $fileName = uniqid() . '_' . $id . "_" . basename($file['name']);
 
         $destination = $uploadDir . $fileName;
         if (move_uploaded_file($file['tmp_name'], $destination)) {
@@ -91,6 +91,23 @@ class ProductGateway
         }
 
         return null;
+    }
+    public function deleteImage($id)
+    {
+        $sql = "SELECT * FROM product WHERE id=:id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($data['image_path'] != null) {
+            unlink($data["image_path"]);
+            echo json_encode([
+                "message" => "old image deleted",
+                "id" => $id,
+
+            ]);
+        }
     }
 
 }

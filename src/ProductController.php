@@ -52,7 +52,9 @@ class ProductController
                 ]);
                 break;
             case "POST":
+
                 if (isset($_FILES['image'])) {
+                    $this->gateway->deleteImage($id);
                     $imageUploadResult = $this->gateway->uploadImage($id, $_FILES['image']);
                     if ($imageUploadResult) {
                         $product['image_path'] = $imageUploadResult;
@@ -67,6 +69,7 @@ class ProductController
 
                 ]);
                 break;
+
             default:
                 http_response_code(405);
                 header("Allow: GET,PATCH,DELETE");
