@@ -7,7 +7,6 @@ class ProductController
     public function __construct(ProductGateway $gateway)
     {
         $this->gateway = $gateway;
-
     }
 
     public function processRequest(string $method, ?string $id): void
@@ -39,26 +38,32 @@ class ProductController
                     echo json_encode(["errors" => $errors]);
                     break;
                 }
+                if (!empty($_FILES['image'])) {
+                    $imageUploadResult = $this->gateway->uploadImage($id, $_FILES['image']);
+                    if ($imageUploadResult) {
+                        $product['image_path'] = $imageUploadResult;
+                    }
+                } else {
+                    http_response_code(422);
+                }
                 $rows = $this->gateway->update($product, $data);
                 echo json_encode([
-                    "message" => "Product $id Update edildi.",
+                    "message" => "Product $id updated.",
                     "rows" => $rows,
                 ]);
                 break;
             case "DELETE":
                 $rows = $this->gateway->delete($id);
-                echo json_encode(
-                    [
-                        "message" => "Product $id deleted.",
-                        "rows" => $rows,
-                    ]);
+                echo json_encode([
+                    "message" => "Product $id deleted.",
+                    "rows" => $rows,
+                ]);
                 break;
             default:
                 http_response_code(405);
                 header("Allow: GET,PATCH,DELETE");
-
+                break;
         }
-
     }
 
     private function processCollectionRequest(string $method): void
@@ -67,7 +72,6 @@ class ProductController
             case "GET":
                 echo json_encode($this->gateway->getAll());
                 break;
-
             case "POST":
                 $data = (array) json_decode(file_get_contents('php://input'), true);
                 $errors = $this->getValidationErrors($data);
@@ -79,15 +83,17 @@ class ProductController
                 $id = $this->gateway->create($data);
                 http_response_code(201);
                 echo json_encode([
-                    "message" => "Product Eklendi",
+                    "message" => "Product added.",
                     "id" => $id,
                 ]);
                 break;
             default:
                 http_response_code(405);
-                header("Allow: GET, POST");
+                header("Allow: GET,POST");
+                break;
         }
     }
+
     private function getValidationErrors(array $data, bool $is_new = true): array
     {
         $errors = [];
@@ -96,9 +102,8 @@ class ProductController
         }
         if (array_key_exists("size", $data)) {
             if (filter_var($data["size"], FILTER_VALIDATE_INT) === false) {
-                $errors[] = 'size must be a integer';
+                $errors[] = 'size must be an integer';
             }
-
         }
         return $errors;
     }

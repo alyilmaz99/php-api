@@ -72,4 +72,25 @@ class ProductGateway
         $stmt->execute();
         return $stmt->rowCount();
     }
+    public function uploadImage(string $id, array $file): ?string
+    {
+        $uploadDir = 'uploads/';
+
+        $fileName = uniqid() . '_' . $file['name'];
+
+        $destination = $uploadDir . $fileName;
+        if (move_uploaded_file($file['tmp_name'], $destination)) {
+
+            $sql = "UPDATE product SET image_path = :image_path WHERE id = :id";
+            $stmt = $this->connection->prepare($sql);
+            $stmt->bindValue(":image_path", $destination, PDO::PARAM_STR);
+            $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $destination;
+        }
+
+        return null;
+    }
+
 }
