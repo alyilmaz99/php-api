@@ -38,14 +38,6 @@ class ProductController
                     echo json_encode(["errors" => $errors]);
                     break;
                 }
-                if (!empty($_FILES['image'])) {
-                    $imageUploadResult = $this->gateway->uploadImage($id, $_FILES['image']);
-                    if ($imageUploadResult) {
-                        $product['image_path'] = $imageUploadResult;
-                    }
-                } else {
-                    http_response_code(422);
-                }
                 $rows = $this->gateway->update($product, $data);
                 echo json_encode([
                     "message" => "Product $id updated.",
@@ -57,6 +49,22 @@ class ProductController
                 echo json_encode([
                     "message" => "Product $id deleted.",
                     "rows" => $rows,
+                ]);
+                break;
+            case "POST":
+                if (isset($_FILES['image'])) {
+                    $imageUploadResult = $this->gateway->uploadImage($id, $_FILES['image']);
+                    if ($imageUploadResult) {
+                        $product['image_path'] = $imageUploadResult;
+                    }
+                } else {
+                    http_response_code(422);
+                    echo json_encode(["error" => "No valid image file provided"]);
+                    exit;
+                }
+                echo json_encode([
+                    "message" => "Product $id updated.",
+
                 ]);
                 break;
             default:

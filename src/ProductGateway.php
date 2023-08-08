@@ -76,14 +76,14 @@ class ProductGateway
     {
         $uploadDir = 'uploads/';
 
-        $fileName = uniqid() . '_' . $file['name'];
+        $fileName = uniqid() . '_' . basename($file['name']);
 
         $destination = $uploadDir . $fileName;
         if (move_uploaded_file($file['tmp_name'], $destination)) {
 
-            $sql = "UPDATE product SET image_path = :image_path WHERE id = :id";
+            $sql = "UPDATE product SET image_path = :image WHERE id = :id";
             $stmt = $this->connection->prepare($sql);
-            $stmt->bindValue(":image_path", $destination, PDO::PARAM_STR);
+            $stmt->bindValue(":image", $destination, PDO::PARAM_STR);
             $stmt->bindValue(":id", $id, PDO::PARAM_INT);
             $stmt->execute();
 
